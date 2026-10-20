@@ -34,10 +34,12 @@ def parse_args(argv=None) -> argparse.Namespace:
     parser.add_argument('source', help="Video URL or local file path")
     parser.add_argument('--out-dir', default='.', help="Output directory (default: current dir)")
     parser.add_argument('--max-frames', type=int, default=80, help="Max frames to extract (default: 80)")
+    parser.add_argument('--resolution', type=int, default=1280,
+                        help="Frame width in pixels (default: 1280 for 720p HD, 1920 for 1080p, 0 for native)")
     parser.add_argument('--no-whisper', action='store_true', help="Disable Whisper fallback")
     parser.add_argument('--whisper', choices=['groq', 'openai', 'auto'], default='auto',
                         help="Force Whisper backend")
-    parser.add_argument('--low-res', action='store_true', help="Use 256px frame width (vs 512px)")
+    parser.add_argument('--low-res', action='store_true', help="Use 512px frame width (vs 1280px default)")
     parser.add_argument('--force-long', action='store_true', help="Allow videos over 90 minutes")
     parser.add_argument('--start', type=str, default=None,
                         help="Start time to focus on (SS, MM:SS, or HH:MM:SS)")
@@ -124,8 +126,29 @@ def main():
             dl = download_video(args.source, cache_dir)
 
         # Now we have the slug — set up the real output directory
-        video_out_dir = os.path.join(base_out_dir, 'avt_outputs', dl['slug'])
+        if args.out_dir and args.out_dir != '.':
+            base_name = os.path.basename(base_out_dir).lower()
+            if base_name == dl['slug'] or dl['slug'] in base_name or any(part in base_name for part in dl['slug'].split('-')[:3]):
+                video_out_dir = base_out_dir
+            else:
+                video_out_dir = os.path.join(base_out_dir, dl['slug'])
+        else:
+            video_out_dir = os.path.join(base_out_dir, 'avt_outputs', dl['slug'])
         os.makedirs(video_out_dir, exist_ok=True)
+
+        # Ensure permanent storage of video assets before any cleanup
+        download_dir = os.path.join(video_out_dir, 'download')
+        os.makedirs(download_dir, exist_ok=True)
+        if not dl.get('is_local') and os.path.exists(dl['video_path']):
+            dest_video = os.path.join(download_dir, os.path.basename(dl['video_path']))
+            if not os.path.exists(dest_video):
+                shutil.copy2(dl['video_path'], dest_video)
+            dl['video_path'] = dest_video
+        if dl.get('subtitle_path') and os.path.exists(dl['subtitle_path']):
+            dest_sub = os.path.join(download_dir, os.path.basename(dl['subtitle_path']))
+            if not os.path.exists(dest_sub):
+                shutil.copy2(dl['subtitle_path'], dest_sub)
+            dl['subtitle_path'] = dest_sub
 
         # If we were using a temp checkpoint dir, migrate to the real one
         if os.path.isdir(temp_checkpoint_dir) and temp_checkpoint_dir != video_out_dir:
@@ -193,7 +216,7 @@ def main():
 
         # Step 4: Extract frames
         print("Step 4/5: Extracting frames...", file=sys.stderr)
-        width = 256 if args.low_res else 512
+        width = 512 if args.low_res else args.resolution
         frame_results = extract_frames(
             dl['video_path'], visual_segments, video_out_dir,
             max_frames=args.max_frames, width=width,

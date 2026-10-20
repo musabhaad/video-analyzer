@@ -115,7 +115,7 @@ AUDIO: 'What\'s up guys, today I want to show you something.'
 FRAME: frames/frame-001.jpg
 
 [00:04 - 00:15] [scene:screen-recording]
-VISUAL: VS Code with Claude Code terminal in bottom panel. Dark theme.
+VISUAL: VS Code with Codex terminal in bottom panel. Dark theme.
 AUDIO: 'The first thing you need to do is install this package.'
 FRAME: frames/frame-002.jpg
 ```

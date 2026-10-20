@@ -18,7 +18,7 @@ Three ways to install, depending on how you want to use it.
 Clone to your global Claude Code skills directory. After this, `/analyze` is available in every project you open:
 
 ```bash
-git clone https://github.com/docusphere/video-analyzer.git ~/.claude/skills/analyze
+git clone https://github.com/musabhaad/video-analyzer.git ~/.claude/skills/analyze
 ```
 
 ### Option B: Project-Local Install (works in one project only)
@@ -27,7 +27,7 @@ Clone into a specific project's `.claude/skills/` directory. The skill only work
 
 ```bash
 cd /path/to/your-project
-git clone https://github.com/docusphere/video-analyzer.git .claude/skills/analyze
+git clone https://github.com/musabhaad/video-analyzer.git .claude/skills/analyze
 ```
 
 ### Option C: Plugin Marketplace
@@ -35,7 +35,7 @@ git clone https://github.com/docusphere/video-analyzer.git .claude/skills/analyz
 If available, install via the Claude Code plugin system:
 
 ```
-/plugin marketplace add docusphere/video-analyzer
+/plugin marketplace add musabhaad/video-analyzer
 /plugin install analyze@video-analyzer
 ```
 
@@ -196,7 +196,7 @@ You can also run video-analyzer directly without Claude Code.
 ### Setup
 
 ```bash
-git clone https://github.com/docusphere/video-analyzer.git
+git clone https://github.com/musabhaad/video-analyzer.git
 cd video-analyzer
 pip install -r requirements.txt
 python3 scripts/preflight.py  # checks deps + scaffolds config

@@ -3,8 +3,8 @@ name: analyze
 description: Analyze any video (URL or local file). Downloads with yt-dlp, uploads to Gemini 2.5 Flash for native video understanding, extracts transcript (captions or Whisper fallback), pulls JPEG frames at AI-identified key moments, and produces a structured .avt (Agentic Video Transcript) file for agent consumption.
 argument-hint: "<video-url-or-path>"
 allowed-tools: Bash, Read, AskUserQuestion
-homepage: https://github.com/docusphere/video-analyzer
-repository: https://github.com/docusphere/video-analyzer
+homepage: https://github.com/musabhaad/video-analyzer
+repository: https://github.com/musabhaad/video-analyzer
 author: docusphere
 license: Source-Available (Non-Commercial)
 user-invocable: true
@@ -73,14 +73,15 @@ Use `timeout: 600000` on the Bash tool call.
 **If it times out again in background mode:** This should not happen (background has no timeout), but if the process fails, re-run — checkpoints ensure no work is repeated.
 
 Optional flags:
-- `--max-frames N` — Cap on extracted frames (default: 80)
+- `--resolution N` — Frame width in pixels (default: 1280 for 720p HD; use 1920 for 1080p, or 0 for native video resolution)
+- `--max-frames N` — Cap on extracted frames (default: 80, increase for dense tutorials)
 - `--start T` — Focus start time (SS, MM:SS, or HH:MM:SS). Zooms into a section.
 - `--end T` — Focus end time (SS, MM:SS, or HH:MM:SS). Use with --start for a range.
-- `--low-res` — Use 256px frame width instead of 512px (smaller output)
+- `--low-res` — Use 512px frame width (saves token budget)
 - `--no-whisper` — Disable Whisper fallback (frames + visuals only if no captions)
 - `--whisper groq|openai` — Force a specific Whisper backend
 - `--force-long` — Allow videos over 90 minutes (default: rejected with warning)
-- `--out-dir DIR` — Output directory (default: current directory)
+- `--out-dir DIR` — Output directory (default: current directory; saves video, subtitles, frames, and .avt)
 
 **Step 3 — Report results.** The script prints the `.avt` file path to stdout and progress to stderr. Once complete:
 
@@ -119,7 +120,7 @@ AUDIO: 'What\'s up guys, today I want to show you something.'
 FRAME: frames/frame-001.jpg
 
 [00:04 - 00:15] [scene:screen-recording]
-VISUAL: VS Code with Claude Code terminal in bottom panel. Dark theme.
+VISUAL: VS Code with Codex terminal in bottom panel. Dark theme.
 AUDIO: 'The first thing you need to do is install this package.'
 FRAME: frames/frame-002.jpg
 ```

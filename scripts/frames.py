@@ -31,21 +31,22 @@ def select_timestamps(timestamps: list, max_frames: int = 80) -> list:
     return [timestamps[i] for i in indices]
 
 
-def _build_frame_cmd(video_path: str, seconds: float, output_path: str, width: int) -> list:
+def _build_frame_cmd(video_path: str, seconds: float, output_path: str, width: int = 1280) -> list:
     """Build ffmpeg command to extract a single frame."""
-    return [
+    cmd = [
         'ffmpeg', '-y',
         '-ss', str(seconds),
         '-i', video_path,
         '-vframes', '1',
-        '-vf', f'scale={width}:-1',
-        '-q:v', '2',
-        output_path,
     ]
+    if width and width > 0:
+        cmd.extend(['-vf', f'scale={width}:-1'])
+    cmd.extend(['-q:v', '2', output_path])
+    return cmd
 
 
 def extract_frames(video_path: str, segments: list, output_dir: str,
-                   max_frames: int = 80, width: int = 512) -> list:
+                   max_frames: int = 80, width: int = 1280) -> list:
     """
     Extract JPEG frames at segment start timestamps.
 

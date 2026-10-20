@@ -31,7 +31,7 @@ RESPONSE_SCHEMA = {
 
 PROMPTS_DIR = os.path.join(os.path.dirname(__file__), 'prompts')
 POLL_INTERVAL = 5  # seconds
-POLL_TIMEOUT = 300  # 5 minutes
+POLL_TIMEOUT = 900  # 15 minutes (increased for long videos)
 
 
 def get_prompt() -> str:

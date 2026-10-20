@@ -8,6 +8,9 @@ import subprocess
 import sys
 
 
+YTDLP_CMD = [sys.executable, '-m', 'yt_dlp', '--js-runtimes', 'node', '--remote-components', 'ejs:github']
+
+
 def is_url(source: str) -> bool:
     """Check if source is a URL (vs local file path)."""
     return source.startswith('http://') or source.startswith('https://')
@@ -43,9 +46,12 @@ def download_video(source: str, cache_dir: str) -> dict:
 
         filename = os.path.basename(source)
         title = os.path.splitext(filename)[0]
+        subtitle_path = os.path.splitext(source)[0] + '.vtt'
+        if not os.path.exists(subtitle_path):
+            subtitle_path = None
         return {
             'video_path': source,
-            'subtitle_path': None,
+            'subtitle_path': subtitle_path,
             'title': title,
             'uploader': 'local',
             'duration': _get_duration(source),
@@ -57,7 +63,7 @@ def download_video(source: str, cache_dir: str) -> dict:
     os.makedirs(cache_dir, exist_ok=True)
 
     # First get metadata
-    meta_cmd = ['yt-dlp', '--dump-json', '--no-download', source]
+    meta_cmd = YTDLP_CMD + ['--dump-json', '--no-download', source]
     print(f"Fetching metadata...", file=sys.stderr)
     meta_result = subprocess.run(meta_cmd, capture_output=True, text=True)
 
@@ -83,10 +89,12 @@ def download_video(source: str, cache_dir: str) -> dict:
     # Download video + subtitles
     output_template = os.path.join(cache_dir, f"{slug}.%(ext)s")
     dl_cmd = [
-        'yt-dlp',
-        '-f', 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        *YTDLP_CMD,
+        '-f', 'bv*[height<=1080]+ba/b[height<=1080]/b',
+        '--merge-output-format', 'mp4',
+        '--ignore-errors',
         '--write-subs', '--write-auto-subs',
-        '--sub-langs', 'en.*,en',
+        '--sub-langs', 'en-orig,en-US,en,en.*',
         '--sub-format', 'vtt',
         '--no-playlist',
         '-o', output_template,
@@ -97,8 +105,6 @@ def download_video(source: str, cache_dir: str) -> dict:
 
     if dl_result.returncode != 0:
         raise RuntimeError(f"yt-dlp download failed: {dl_result.stderr.strip()}")
-
-    # Find downloaded files
     video_path = None
     subtitle_path = None
     for f in os.listdir(cache_dir):

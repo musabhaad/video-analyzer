@@ -5,6 +5,7 @@ import os
 import shutil
 import subprocess
 import sys
+import importlib.util
 
 CONFIG_DIR = os.path.expanduser("~/.config/video-analyzer")
 ENV_FILE = os.path.join(CONFIG_DIR, ".env")
@@ -16,6 +17,8 @@ OPTIONAL_KEYS = ['GROQ_API_KEY', 'OPENAI_API_KEY']
 
 def check_binary(name: str) -> bool:
     """Check if a binary is available on PATH."""
+    if name == 'yt-dlp' and importlib.util.find_spec('yt_dlp') is not None:
+        return True
     return shutil.which(name) is not None
 
 
